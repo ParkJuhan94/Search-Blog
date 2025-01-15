@@ -14,7 +14,6 @@ class BlogController(
 ) {
     @GetMapping("")
     fun search(@RequestBody blogDto: BlogDto): String? {
-        val result: String? = blogService.searchKakao(blogDto)
-        return result
+        return blogService.searchKakao(blogDto)
     }
 }
