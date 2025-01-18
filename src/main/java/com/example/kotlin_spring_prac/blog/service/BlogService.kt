@@ -1,6 +1,8 @@
 package com.example.kotlin_spring_prac.blog.service
 
 import com.example.kotlin_spring_prac.blog.dto.BlogDto
+import com.example.kotlin_spring_prac.blog.entity.WordCount
+import com.example.kotlin_spring_prac.blog.repository.WordRepository
 import com.example.kotlin_spring_prac.core.exception.InvalidInputException
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
@@ -10,7 +12,9 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
 
 @Service
-class BlogService {
+class BlogService(
+    val wordRepository: WordRepository
+) {
     @Value("\${REST_API_KEY}")
     lateinit var restApiKey: String
 
@@ -38,7 +42,15 @@ class BlogService {
             .retrieve() // 응답을 받음.
             .bodyToMono<String>() // 응답을 String으로 변환.
 
-        // 응답을 블록하고 반환. 이 부분은 비동기 프로세스를 동기적으로 처리.
-        return response.block()
+        // 검색어 순위 처리하기
+        val lowQuery: String = blogDto.query!!.lowercase()
+        val word: WordCount = wordRepository.findById(lowQuery).orElse(WordCount(lowQuery))
+        word.cnt++
+
+        wordRepository.save(word)
+
+        return response.block() // 응답을 블록하고 반환. 이 부분은 비동기 프로세스를 동기적으로 처리.
     }
+
+    fun searchWordRank(): List<WordCount> = wordRepository.findTop10ByOrderByCntDesc()
 }
