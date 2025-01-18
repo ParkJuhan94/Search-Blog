@@ -14,54 +14,31 @@ class BlogService {
     @Value("\${REST_API_KEY}")
     lateinit var restApiKey: String
 
+    // Kakao 블로그 검색 API를 호출하는 함수.
     fun searchKakao(blogDto: BlogDto): String? {
-        val msgList = mutableListOf<ExceptionMsg>()
-
-        if (blogDto.query.trim().isEmpty()) {
-            msgList.add(ExceptionMsg.EMPTY_QUERY)
-        }
-
-        if (blogDto.sort.trim() !in arrayOf("accuracy", "recency")) {
-            msgList.add(ExceptionMsg.NOT_IN_SORT)
-        }
-
-        when {
-            blogDto.page < 1 -> msgList.add(ExceptionMsg.LESS_THAN_MIN_PAGE)
-            blogDto.page > 50 -> msgList.add(ExceptionMsg.MORE_THAN_MAX_PAGE)
-        }
-
-        if (msgList.isNotEmpty()) {
-            val message = msgList.joinToString { it.msg }
-            throw InvalidInputException(message)
-        }
-
+        // WebClient를 사용해 Kakao API에 요청을 보냄.
         val webClient = WebClient
             .builder()
-            .baseUrl("https://dapi.kakao.com")
-            .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .baseUrl("https://dapi.kakao.com") // Kakao API의 기본 URL.
+            .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE) // JSON 타입의 헤더 설정.
             .build()
 
+        // GET 요청을 생성하고 필요한 파라미터와 헤더를 설정.
         val response = webClient
             .get()
             .uri {
-                it.path("/v2/search/blog")
-                    .queryParam("query", blogDto.query)
-                    .queryParam("sort", blogDto.sort)
-                    .queryParam("page", blogDto.page)
-                    .queryParam("size", blogDto.size)
+                it.path("/v2/search/blog") // 블로그 검색 API 경로.
+                    .queryParam("query", blogDto.query) // 검색어 파라미터.
+                    .queryParam("sort", blogDto.sort) // 정렬 기준 파라미터.
+                    .queryParam("page", blogDto.page) // 페이지 번호 파라미터.
+                    .queryParam("size", blogDto.size) // 한 페이지에 표시할 문서 수.
                     .build()
             }
-            .header("Authorization", "KakaoAK $restApiKey")
-            .retrieve()
-            .bodyToMono<String>()
+            .header("Authorization", "KakaoAK $restApiKey") // 인증 헤더에 API 키 추가.
+            .retrieve() // 응답을 받음.
+            .bodyToMono<String>() // 응답을 String으로 변환.
 
+        // 응답을 블록하고 반환. 이 부분은 비동기 프로세스를 동기적으로 처리.
         return response.block()
     }
-}
-
-private enum class ExceptionMsg(val msg: String) {
-    EMPTY_QUERY("query parameter required"),
-    NOT_IN_SORT("sort parameter one of accuracy and recency"),
-    LESS_THAN_MIN_PAGE("page is less than min"),
-    MORE_THAN_MAX_PAGE("page is more than max")
 }
