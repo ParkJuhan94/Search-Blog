@@ -9,6 +9,7 @@ import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
+import reactor.core.publisher.Mono
 
 @Service
 class BlogService(
@@ -18,7 +19,7 @@ class BlogService(
     lateinit var restApiKey: String
 
     // Kakao 블로그 검색 API를 호출하는 함수.
-    fun searchKakao(blogDto: BlogDto): String? {
+    fun searchKakao(blogDto: BlogDto): Mono<String>? {
         // WebClient를 사용해 Kakao API에 요청을 보냄.
         val webClient = WebClient
             .builder()
@@ -27,7 +28,7 @@ class BlogService(
             .build()
 
         // GET 요청을 생성하고 필요한 파라미터와 헤더를 설정.
-        val response = webClient
+        return webClient
             .get()
             .uri {
                 it.path("/v2/search/blog") // 블로그 검색 API 경로.
@@ -40,15 +41,15 @@ class BlogService(
             .header("Authorization", "KakaoAK $restApiKey") // 인증 헤더에 API 키 추가.
             .retrieve() // 응답을 받음.
             .bodyToMono<String>() // 응답을 String으로 변환.
+            .doOnSuccess { saveSearchQuery(blogDto.query) } // 응답 성공 시 검색어 처리
+    }
 
-        // 검색어 순위 처리하기
-        val lowQuery: String = blogDto.query.lowercase()
-        val word: WordCount = wordRepository.findById(lowQuery).orElse(WordCount(lowQuery))
+    // 검색어 순위 처리
+    private fun saveSearchQuery(query: String) {
+        val lowQuery = query.lowercase()
+        val word = wordRepository.findById(lowQuery).orElse(WordCount(lowQuery))
         word.cnt++
-
         wordRepository.save(word)
-
-        return response.block() // 응답을 블록하고 반환. 이 부분은 비동기 프로세스를 동기적으로 처리.
     }
 
     fun searchWordRank(): List<WordCount> = wordRepository.findTop10ByOrderByCntDesc()
