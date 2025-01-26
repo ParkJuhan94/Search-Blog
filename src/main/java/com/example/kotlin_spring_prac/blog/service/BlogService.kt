@@ -19,7 +19,7 @@ class BlogService(
     lateinit var restApiKey: String
 
     // Kakao 블로그 검색 API를 호출하는 함수.
-    fun searchKakao(blogDto: BlogDto): Mono<String>? {
+    fun searchKakao(blogDto: BlogDto): Mono<String> {
         val webClient = WebClient
             .builder()
             .baseUrl("https://dapi.kakao.com")
