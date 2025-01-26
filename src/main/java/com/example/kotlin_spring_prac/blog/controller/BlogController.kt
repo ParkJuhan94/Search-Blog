@@ -1,8 +1,8 @@
-package com.example.kotlin_spring_prac.blog.controller;
+package com.example.kotlin_spring_prac.blog.controller
 
-import com.example.kotlin_spring_prac.blog.dto.BlogDto;
+import com.example.kotlin_spring_prac.blog.dto.BlogDto
 import com.example.kotlin_spring_prac.blog.entity.WordCount
-import com.example.kotlin_spring_prac.blog.service.BlogService;
+import com.example.kotlin_spring_prac.blog.service.BlogService
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
@@ -12,14 +12,8 @@ import reactor.core.publisher.Mono
 class BlogController(
     val blogService: BlogService
 ) {
-    @GetMapping("")
-    fun search(
-        @RequestParam query: String,
-        @RequestParam sort: String,
-        @RequestParam page: Int,
-        @RequestParam size: Int
-    ): Mono<String> {
-        val blogDto = BlogDto(query, sort, page, size)
+    @PostMapping("")
+    fun search(@RequestBody @Valid blogDto: BlogDto): Mono<String> {
         return blogService.searchKakao(blogDto)
     }
 
