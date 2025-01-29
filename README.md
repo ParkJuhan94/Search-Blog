@@ -1,1 +1,1 @@
-# Kotlin_Spring_Prac
+# 블로그 검색 프로젝트
