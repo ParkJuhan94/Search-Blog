@@ -13,11 +13,9 @@ import reactor.core.publisher.Mono
 
 @Service
 class BlogService(
-    val wordRepository: WordRepository
+    val wordRepository: WordRepository,
+    @Value("\${REST_API_KEY}") private var restApiKey: String
 ) {
-    @Value("\${REST_API_KEY}")
-    lateinit var restApiKey: String
-
     // Kakao 블로그 검색 API를 호출하는 함수.
     fun searchKakao(blogDto: BlogDto): Mono<String> {
         val webClient = WebClient
