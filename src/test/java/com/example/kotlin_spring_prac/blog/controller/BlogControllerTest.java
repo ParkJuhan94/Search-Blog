@@ -14,7 +14,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @WebFluxTest(BlogController.class)
-public class BlogControllerTest {
+class BlogControllerTest {
 
     @Autowired
     private WebTestClient webTestClient;
@@ -24,8 +24,8 @@ public class BlogControllerTest {
 
     @Test
     @DisplayName("[Kakao 블로그 검색 API 응답 확인]")
-    public void searchTest() {
-        BlogDto blogDto = new BlogDto("kotlin", "ACCURACY", 1, 10);
+    void searchTest() {
+        BlogDto blogDto = new BlogDto("kotlin", "ACCURACY", 2, 3);
         String mockResponse =
                 "{\"documents\":[],\"meta\":{\"total_count\":0,\"pageable_count\":0,\"is_end\":true}}";
 
@@ -40,7 +40,6 @@ public class BlogControllerTest {
                 .expectBody(String.class)
                 .isEqualTo(mockResponse);
 
-        // BlogService의 searchKakao 호출 여부 확인
         verify(blogService, times(1)).searchKakao(any(BlogDto.class));
     }
 
