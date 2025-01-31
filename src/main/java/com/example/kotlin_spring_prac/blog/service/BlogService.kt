@@ -16,14 +16,13 @@ class BlogService(
     val wordRepository: WordRepository,
     @Value("\${REST_API_KEY}") private var restApiKey: String
 ) {
+    private val webClient: WebClient = WebClient.builder()
+        .baseUrl("https://dapi.kakao.com")
+        .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .build()
+
     // Kakao 블로그 검색 API를 호출하는 함수.
     fun searchKakao(blogDto: BlogDto): Mono<String> {
-        val webClient = WebClient
-            .builder()
-            .baseUrl("https://dapi.kakao.com")
-            .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .build()
-
         return webClient
             .get()
             .uri {
